@@ -37,12 +37,23 @@ resource "ibm_atracker_target" atracker_target_eventstreams_instance {
   region = var.atracker_target_region
 }
 
+resource "ibm_atracker_target" atracker_target_cloudlogs_instance {
+  name = var.atracker_target_name
+  target_type = "cloud_logs"
+  cloudlogs_endpoint {
+    target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+  }
+  region = var.atracker_target_region
+}
+
 
 // Provision atracker_route resource instance
 resource "ibm_atracker_route" "atracker_route_instance" {
   name = var.atracker_route_name
-  receive_global_events = var.atracker_route_receive_global_events
-  rules = var.atracker_route_rules
+  rules {
+    target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
+    locations = [ "us-south" ]
+  }
 }
 
 // Provision atracker_settings resource instance
@@ -61,8 +72,4 @@ data "ibm_atracker_targets" "atracker_targets_instance" {
 // Create atracker_routes data source
 data "ibm_atracker_routes" "atracker_routes_instance" {
   name = var.atracker_routes_name
-}
-
-// Create atracker_endpoints data source (DEPRECATED)
-data "ibm_atracker_endpoints" "atracker_endpoints_instance" {
 }

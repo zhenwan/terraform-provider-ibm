@@ -132,20 +132,21 @@ func ResourceIBMCmValidation() *schema.Resource {
 				Computed:    true,
 				Description: "Last operation (e.g. submit_deployment, generate_installer, install_offering.",
 			},
-			"target": &schema.Schema{
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
+			// "target": &schema.Schema{
+			// 	Type:        schema.TypeMap,
+			// 	Computed:    true,
+			// 	Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
+			// 	Elem:        &schema.Schema{Type: schema.TypeString},
+			// },
 			"message": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Any message needing to be conveyed as part of the validation job.",
 			},
 			"x_auth_refresh_token": &schema.Schema{
+				Deprecated:  "This argument is deprecated because it is now retrieved automatically.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				Description: "Authentication token used to submit validation job.",
 			},
@@ -194,6 +195,10 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		version = offering.Kinds[0].Versions[0]
 	}
 
+	mk := fmt.Sprintf("%s.%s", *version.CatalogID, *version.OfferingID)
+	conns.IbmMutexKV.Lock(mk)
+	defer conns.IbmMutexKV.Unlock(mk)
+
 	valid := "valid"
 	if version.Validation.State == &valid && d.Get("revalidate_if_validated") != true {
 		// version already validated and do not wish to revalidate
@@ -220,7 +225,7 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		validateInstallOptions.SetOverrideValues(&overridesModel)
 	}
 	if _, ok := d.GetOk("environment_variables"); ok {
-		envsModel, err := envVariablesToDeployRequestBodyEnvVariables(d.Get("environment_variables").([]map[string]interface{}))
+		envsModel, err := envVariablesToDeployRequestBodyEnvVariables(d.Get("environment_variables").([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -233,9 +238,12 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 		}
 		validateInstallOptions.SetSchematics(&schematicsModel)
 	}
-	if _, ok := d.GetOk("x_auth_refresh_token"); ok {
-		validateInstallOptions.SetXAuthRefreshToken(d.Get("x_auth_refresh_token").(string))
+
+	bxSession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	validateInstallOptions.SetXAuthRefreshToken(bxSession.Config.IAMRefreshToken)
 
 	response, err := catalogManagementClient.ValidateInstallWithContext(context, validateInstallOptions)
 	if err != nil {
@@ -247,7 +255,7 @@ func resourceIBMCmValidationCreate(context context.Context, d *schema.ResourceDa
 
 	validationStatusOptions := &catalogmanagementv1.GetValidationStatusOptions{}
 	validationStatusOptions.SetVersionLocID(*validateInstallOptions.VersionLocID)
-	validationStatusOptions.SetXAuthRefreshToken(d.Get("x_auth_refresh_token").(string))
+	validationStatusOptions.SetXAuthRefreshToken(bxSession.Config.IAMRefreshToken)
 	result, response, err := catalogManagementClient.GetValidationStatusWithContext(context, validationStatusOptions)
 	if err != nil {
 		log.Printf("[DEBUG] GetValidationStatusWithContext failed %s\n%s", err, response)
@@ -401,20 +409,22 @@ func markVersionAsConsumable(version catalogmanagementv1.Version, context contex
 	return nil
 }
 
-func envVariablesToDeployRequestBodyEnvVariables(envVariables []map[string]interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {
+func envVariablesToDeployRequestBodyEnvVariables(envVariables []interface{}) ([]catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem, error) {
 	var modelArr []catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem
 	for _, envVar := range envVariables {
-		model := catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem{}
-		if envVar["name"] != nil && envVar["name"].(string) != "" {
-			model.Name = core.StringPtr(envVar["name"].(string))
+		if envVar != nil {
+			model := catalogmanagementv1.DeployRequestBodyEnvironmentVariablesItem{}
+			if envVar.(map[string]interface{})["name"] != nil && envVar.(map[string]interface{})["name"].(string) != "" {
+				model.Name = core.StringPtr(envVar.(map[string]interface{})["name"].(string))
+			}
+			if envVar.(map[string]interface{})["value"] != nil {
+				model.Value = envVar.(map[string]interface{})["value"]
+			}
+			if envVar.(map[string]interface{})["secure"] != nil {
+				model.Secure = core.BoolPtr(envVar.(map[string]interface{})["secure"].(bool))
+			}
+			modelArr = append(modelArr, model)
 		}
-		if envVar["value"] != nil {
-			model.Value = envVar["value"]
-		}
-		if envVar["secure"] != nil {
-			model.Secure = core.BoolPtr(envVar["secure"].(bool))
-		}
-		modelArr = append(modelArr, model)
 	}
 	return modelArr, nil
 }

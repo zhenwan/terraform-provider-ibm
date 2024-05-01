@@ -11,8 +11,8 @@ description: |-
 Create, update, or delete for a Power Systems Virtual Server image. For more information, about IBM power virtual server cloud, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
 ## Example usage
-The following example enables you to create a image:
-
+The following example enables you to create a image in your project:
+- stock-images import
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "7200-03-02"
@@ -20,7 +20,7 @@ resource "ibm_pi_image" "testacc_image  "{
   pi_cloud_instance_id = "<value of the cloud_instance_id>"
 }
 ```
-
+- COS image import
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
   pi_image_name       = "test_image"
@@ -74,13 +74,12 @@ Review the argument references that you can specify for your resource.
 - `pi_image_bucket_access` - (Optional, String) Indicates if the bucket has public or private access. The default value is `public`.
 - `pi_image_bucket_file_name` - (Optional, String) Cloud Object Storage image filename
   - `pi_image_bucket_file_name` is required with `pi_image_bucket_name`
-- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region
+- `pi_image_bucket_region` - (Optional, String) Cloud Object Storage region. Supported COS regions are: `au-syd`, `br-sao`, `ca-tor`, `eu-de`, `eu-es`, `eu-gb`, `jp-osa`, `jp-tok`, `us-east`, `us-south`.
   - `pi_image_bucket_region` is required with `pi_image_bucket_name`
 - `pi_image_secret_key` - (Optional, String, Sensitive) Cloud Object Storage secret key; required for buckets with private access.
   - `pi_image_secret_key` is required with `pi_image_access_key`
-- `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_image_storage_type` and `pi_affinity_policy` will be ignored.
-- `pi_image_storage_type` - (Optional, String) Type of storage. Will be ignored if `pi_image_storage_pool` or `pi_affinity_policy` is provided. If only using `pi_image_storage_type` for storage selection then the storage pool with the most available space will be selected.
-
+- `pi_image_storage_pool` - (Optional, String) Storage pool where the image will be loaded, if provided then `pi_affinity_policy` will be ignored. Used only when importing an image from cloud storage.
+- `pi_image_storage_type` - (Optional, String) Type of storage; If not provided the storage type will default to 'tier3'. Used only when importing an image from cloud storage.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

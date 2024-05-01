@@ -88,6 +88,37 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 							Computed:    true,
 							Description: "The total bandwidth (in megabits per second)",
 						},
+						isBareMetalServerEnableSecureBoot: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot.",
+						},
+
+						isBareMetalServerTrustedPlatformModule: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									isBareMetalServerTrustedPlatformModuleMode: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The trusted platform module mode to use. The specified value must be listed in the bare metal server profile's supported_trusted_platform_module_modes",
+									},
+									isBareMetalServerTrustedPlatformModuleEnabled: {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "Indicates whether the trusted platform module is enabled.",
+									},
+									isBareMetalServerTrustedPlatformModuleSupportedModes: {
+										Type:        schema.TypeSet,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Set:         flex.ResourceIBMVPCHash,
+										Computed:    true,
+										Description: "The trusted platform module (TPM) mode:: disabled: No TPM functionality, tpm_2: TPM 2.0. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. Enum: [ disabled, tpm_2 ]",
+									},
+								},
+							},
+						},
 						isBareMetalServerBootTarget: {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -206,9 +237,9 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 										Computed: true,
 									},
 									isBareMetalServerNicHref: {
-										Type:       schema.TypeString,
-										Computed:   true,
-										Deprecated: "This URL of the interface",
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "This URL of the interface",
 									},
 
 									isBareMetalServerNicSecurityGroups: {
@@ -251,6 +282,284 @@ func DataSourceIBMIsBareMetalServers() *schema.Resource {
 													Type:        schema.TypeString,
 													Computed:    true,
 													Description: "The resource type",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+
+						"primary_network_attachment": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The primary network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this network attachment.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this network attachment.",
+									},
+									"name": &schema.Schema{
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"primary_ip": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The primary IP address of the virtual network interface for the network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"address": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+												},
+												"deleted": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"more_info": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Link to documentation about deleted resources.",
+															},
+														},
+													},
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this reserved IP.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this reserved IP.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									"subnet": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The subnet of the virtual network interface for the network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this subnet.",
+												},
+												"deleted": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"more_info": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Link to documentation about deleted resources.",
+															},
+														},
+													},
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this subnet.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this subnet.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+
+						"network_attachments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The network attachments for this bare metal server, including the primary network attachment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this network attachment.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this network attachment.",
+									},
+									"name": &schema.Schema{
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"primary_ip": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The primary IP address of the virtual network interface for the network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"address": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+												},
+												"deleted": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"more_info": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Link to documentation about deleted resources.",
+															},
+														},
+													},
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this reserved IP.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this reserved IP.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
+												},
+											},
+										},
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									"subnet": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The subnet of the virtual network interface for the network attachment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this subnet.",
+												},
+												"deleted": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"more_info": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Link to documentation about deleted resources.",
+															},
+														},
+													},
+												},
+												"href": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The URL for this subnet.",
+												},
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unique identifier for this subnet.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The name for this subnet. The name is unique across all subnets in the VPC.",
+												},
+												"resource_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The resource type.",
 												},
 											},
 										},
@@ -454,18 +763,18 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		vpcCrn := vpcCrnIntf.(string)
 		listBareMetalServersOptions.VPCCRN = &vpcCrn
 	}
-	if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
-		subnetId := subnetIntf.(string)
-		listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
-	}
-	if subnetNameIntf, ok := d.GetOk("network_interfaces_subnet_name"); ok {
-		subnetName := subnetNameIntf.(string)
-		listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
-	}
-	if subnetCrnIntf, ok := d.GetOk("network_interfaces_subnet_crn"); ok {
-		subnetCrn := subnetCrnIntf.(string)
-		listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
-	}
+	// if subnetIntf, ok := d.GetOk("network_interfaces_subnet"); ok {
+	// 	subnetId := subnetIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetID = &subnetId
+	// }
+	// if subnetNameIntf, ok := d.GetOk("network_interfaces_subnet_name"); ok {
+	// 	subnetName := subnetNameIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetName = &subnetName
+	// }
+	// if subnetCrnIntf, ok := d.GetOk("network_interfaces_subnet_crn"); ok {
+	// 	subnetCrn := subnetCrnIntf.(string)
+	// 	listBareMetalServersOptions.NetworkInterfacesSubnetCRN = &subnetCrn
+	// }
 	for {
 
 		if start != "" {
@@ -490,9 +799,11 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		}
 		l["id"] = *bms.ID
 		l[isBareMetalServerBandwidth] = *bms.Bandwidth
-		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
-		bmsBootTarget := bmsBootTargetIntf.ID
-		l[isBareMetalServerBootTarget] = bmsBootTarget
+		if bms.BootTarget != nil {
+			bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
+			bmsBootTarget := bmsBootTargetIntf.ID
+			l[isBareMetalServerBootTarget] = bmsBootTarget
+		}
 		cpuList := make([]map[string]interface{}, 0)
 		if bms.Cpu != nil {
 			currentCPU := map[string]interface{}{}
@@ -527,6 +838,21 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 		l[isBareMetalServerHref] = *bms.Href
 		l[isBareMetalServerMemory] = *bms.Memory
 		l[isBareMetalServerProfile] = *bms.Profile.Name
+
+		//enable secure boot
+		if bms.EnableSecureBoot != nil {
+			l[isBareMetalServerEnableSecureBoot] = bms.EnableSecureBoot
+		}
+
+		// tpm
+		if bms.TrustedPlatformModule != nil {
+			trustedPlatformModuleMap, err := resourceIBMIsBareMetalServerBareMetalServerTrustedPlatformModulePrototypeToMap(bms.TrustedPlatformModule)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			l[isBareMetalServerTrustedPlatformModule] = []map[string]interface{}{trustedPlatformModuleMap}
+		}
+
 		//pni
 
 		if bms.PrimaryNetworkInterface != nil && bms.PrimaryNetworkInterface.ID != nil {
@@ -593,11 +919,34 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 						currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 					}
 				}
+			case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+				{
+					primNic := bmsnic.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+					currentPrimNic[isInstanceNicAllowIPSpoofing] = *primNic.AllowIPSpoofing
+
+					if len(primNic.SecurityGroups) != 0 {
+						secgrpList := []string{}
+						for i := 0; i < len(primNic.SecurityGroups); i++ {
+							secgrpList = append(secgrpList, string(*(primNic.SecurityGroups[i].ID)))
+						}
+						currentPrimNic[isInstanceNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+					}
+				}
 			}
 
 			primaryNicList = append(primaryNicList, currentPrimNic)
 			l[isBareMetalServerPrimaryNetworkInterface] = primaryNicList
 		}
+
+		primaryNetworkAttachment := []map[string]interface{}{}
+		if bms.PrimaryNetworkAttachment != nil {
+			modelMap, err := dataSourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(bms.PrimaryNetworkAttachment)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			primaryNetworkAttachment = append(primaryNetworkAttachment, modelMap)
+		}
+		l["primary_network_attachment"] = primaryNetworkAttachment
 
 		//ni
 
@@ -663,11 +1012,39 @@ func dataSourceIBMISBareMetalServersRead(context context.Context, d *schema.Reso
 							currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
 						}
 					}
+				case "*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket":
+					{
+						bmsnic := bmsnicintf.(*vpcv1.BareMetalServerNetworkInterfaceByHiperSocket)
+						currentNic[isBareMetalServerNicAllowIPSpoofing] = *bmsnic.AllowIPSpoofing
+						currentNic[isBareMetalServerNicSubnet] = *bmsnic.Subnet.ID
+						if len(bmsnic.SecurityGroups) != 0 {
+							secgrpList := []string{}
+							for i := 0; i < len(bmsnic.SecurityGroups); i++ {
+								secgrpList = append(secgrpList, string(*(bmsnic.SecurityGroups[i].ID)))
+							}
+							currentNic[isBareMetalServerNicSecurityGroups] = flex.NewStringSet(schema.HashString, secgrpList)
+						}
+					}
 				}
 				interfacesList = append(interfacesList, currentNic)
 			}
 		}
 		l[isBareMetalServerNetworkInterfaces] = interfacesList
+
+		networkAttachments := []map[string]interface{}{}
+		if bms.NetworkAttachments != nil {
+			for _, modelItem := range bms.NetworkAttachments {
+				if *modelItem.ID != *bms.PrimaryNetworkAttachment.ID {
+					modelMap, err := dataSourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(&modelItem)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					networkAttachments = append(networkAttachments, modelMap)
+				}
+			}
+		}
+		l["network_attachments"] = networkAttachments
+
 		l[isBareMetalServerCreatedAt] = bms.CreatedAt.String()
 
 		//disks

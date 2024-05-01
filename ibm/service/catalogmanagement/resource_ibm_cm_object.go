@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -173,6 +174,7 @@ func ResourceIBMCmObject() *schema.Resource {
 			"data": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Stringified map of data values for this object.",
 			},
 			"rev": &schema.Schema{
@@ -318,7 +320,13 @@ func resourceIBMCmObjectRead(context context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("Error setting label: %s", err))
 	}
 	if catalogObject.Tags != nil {
-		if err = d.Set("tags", catalogObject.Tags); err != nil {
+		modifiedTags := []string{}
+		for _, tag := range catalogObject.Tags {
+			if !strings.HasPrefix(tag, "svc:") && !strings.HasPrefix(tag, "fqdn:") && tag != *catalogObject.ParentID {
+				modifiedTags = append(modifiedTags, tag)
+			}
+		}
+		if err = d.Set("tags", modifiedTags); err != nil {
 			return diag.FromErr(fmt.Errorf("Error setting tags: %s", err))
 		}
 	}
@@ -537,12 +545,6 @@ func resourceIBMCmObjectMapToPublishObject(modelMap map[string]interface{}) (*ca
 	if modelMap["public_approved"] != nil {
 		model.PublicApproved = core.BoolPtr(modelMap["public_approved"].(bool))
 	}
-	if modelMap["portal_approval_record"] != nil && modelMap["portal_approval_record"].(string) != "" {
-		model.PortalApprovalRecord = core.StringPtr(modelMap["portal_approval_record"].(string))
-	}
-	if modelMap["portal_url"] != nil && modelMap["portal_url"].(string) != "" {
-		model.PortalURL = core.StringPtr(modelMap["portal_url"].(string))
-	}
 	return model, nil
 }
 
@@ -576,12 +578,6 @@ func resourceIBMCmObjectPublishObjectToMap(model *catalogmanagementv1.PublishObj
 	}
 	if model.PublicApproved != nil {
 		modelMap["public_approved"] = model.PublicApproved
-	}
-	if model.PortalApprovalRecord != nil {
-		modelMap["portal_approval_record"] = model.PortalApprovalRecord
-	}
-	if model.PortalURL != nil {
-		modelMap["portal_url"] = model.PortalURL
 	}
 	return modelMap, nil
 }

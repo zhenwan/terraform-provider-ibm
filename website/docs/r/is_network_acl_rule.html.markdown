@@ -127,7 +127,7 @@ Review the argument references that you can specify for your resource.
    - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
    - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
 - `network_acl` - (Required, String) The ID of the network ACL.
-- `name` - (Required, String) The user-defined name for this rule.
+- `name` - (Optional, String) The user-defined name for this rule.
 - `source` - (Required, String) The source IP address or CIDR block.
 - `tcp` - (Optional, List) TCP protocol.
 
@@ -149,14 +149,14 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `id` - (String) The ID of the network ACL rule. The ID is composed of `\<network_acl\>/\<rule_id\>.`
+- `id` - (String) The ID of the network ACL rule. The ID is composed of `\network_acl\rule_id`.
 - `href` - (String) The URL for this network ACL rule.
 - `protocol` - (String) The protocol to enforce.
 - `rule_id` - (String) The unique identifier of the rule.
 
 
 ## Import
-The `ibm_is_network_acl_rule` can be imported using ID `\<network_acl\>/\<rule_id\>`
+The `ibm_is_network_acl_rule` can be imported using ID `\network_acl\rule_id`
 
 **Example**
 
